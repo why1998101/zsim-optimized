@@ -181,8 +181,12 @@ class MESITopCC : public GlobAlloc {
             uint32_t numSharers;
             std::bitset<MAX_CACHE_CHILDREN> sharers;
             bool exclusive;
+            bool migratory;
+            uint32_t lastGETX;
 
             void clear() {
+                migratory = false;
+                lastGETX = 0xFFFFFFFF;
                 exclusive = false;
                 numSharers = 0;
                 sharers.reset();
@@ -194,6 +198,10 @@ class MESITopCC : public GlobAlloc {
 
             bool isExclusive() {
                 return (numSharers == 1) && (exclusive);
+            }
+
+            bool isMigratory() {
+                return migratory;
             }
         };
 

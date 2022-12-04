@@ -262,6 +262,35 @@ uint64_t MESITopCC::processAccess(Address lineAddr, uint32_t lineId, AccessType 
                                   MESIState* childState, bool* inducedWriteback, uint64_t cycle, uint32_t srcId, uint32_t flags) {
     Entry* e = &array[lineId];
     uint64_t respCycle = cycle;
+
+    //clear migratory status if sharer exceeds 2
+    if (e->isMigratory() && e->numSharers > 2)
+    {
+        e->migratory = false;
+    }
+
+    //trigger migratory check
+    if (type == GETX && !e->isMigratory())
+    {
+        // exact 2 sharer and last read-exclusive requester is not the current requester
+        if (e->numSharers == 2 && e->lastGETX != 0xFFFFFFFF && e->lastGETX != childId)
+        {
+            e->migratory = true;
+        }
+    }
+
+    //treat read as read-exclusive for migratory object
+    if (e->isMigratory() && type == GETS)
+    {   
+        type = GETX;
+    }
+
+    //update lastGETX
+    if (type == GETX)
+    {
+        e->lastGETX = childId;
+    }
+
     switch (type) {
         case PUTX:
             assert(e->isExclusive());

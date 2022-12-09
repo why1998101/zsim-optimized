@@ -268,12 +268,6 @@ uint64_t MESITopCC::processAccess(Address lineAddr, uint32_t lineId, AccessType 
         e->migratory = false;
     }
 
-    //clear migratory status if last user did NOT write
-    if (e->isMigratory() && type == GETS && childId != e->lastGETS && e->lastGETS != e->lastGETX)
-    {
-        e->migratory = false;
-    }
-
     //trigger migratory check
     if (type == GETX && !e->isMigratory())
     {
@@ -284,20 +278,16 @@ uint64_t MESITopCC::processAccess(Address lineAddr, uint32_t lineId, AccessType 
         }
     }
 
-    //update lastGETX
-    if (type == GETX)
-    {
-        e->lastGETX = childId;
-    }
-    else if (type == GETS)
-    {
-        e->lastGETS = childId;
-    }
-
     //treat read as read-exclusive for migratory object
     if (e->isMigratory() && type == GETS)
     {   
         type = GETX;
+    }
+
+    //update lastGETX
+    if (type == GETX)
+    {
+        e->lastGETX = childId;
     }
 
     switch (type) {

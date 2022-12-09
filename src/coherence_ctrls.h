@@ -183,10 +183,12 @@ class MESITopCC : public GlobAlloc {
             bool exclusive;
             bool migratory;
             uint32_t lastGETX;
+            uint32_t lastGETS;
 
             void clear() {
                 migratory = false;
                 lastGETX = 0xFFFFFFFF;
+                lastGETS = 0xFFFFFFFF;
                 exclusive = false;
                 numSharers = 0;
                 sharers.reset();
